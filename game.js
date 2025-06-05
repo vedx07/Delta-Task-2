@@ -65,7 +65,7 @@ const player = {
   health: 100,
   dataShardsDelivered: 0,
   collectedDataShards: 0,
-  highScore: 0,
+  highScore: localStorage.getItem('HighScore') || 0, // Load from localStorage or default to 0
 };
 
 const center = (x, w) => x + w / 2;
@@ -566,6 +566,10 @@ setInterval(checkSurveillanceDamage,100)
 
 
 function checkWin() {
+    if (player.dataShardsDelivered > player.highScore) {
+    player.highScore = player.dataShardsDelivered;
+    localStorage.setItem('HighScore', player.highScore); // Store in localStorage
+  }
   if (system.health >= 100) {
     paused = true;
     alert("You WIN!!!");
