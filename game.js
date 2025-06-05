@@ -1,5 +1,40 @@
 const canvas = document.querySelector("#canvas");
 const c = canvas.getContext("2d");
+
+
+let paused = false;
+let gameInterval;
+let surveillanceInterval;
+
+// Handle button clicks
+document.getElementById("pauseBtn").addEventListener("click", () => {
+  paused = true;
+});
+
+document.getElementById("resumeBtn").addEventListener("click", () => {
+  paused = false;
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  // Reset system and player state
+  system.health = 79;
+  player.x = 200;
+  player.y = 200;
+  player.health = 100;
+  player.collectedKey = 0;
+  player.collectedDataShards = 0;
+  player.dataShardsDelivered = 0;
+  key.length = 0;
+  bullets.length = 0;
+  surveillanceTowers.length = 0;
+
+  generateMap();
+  paused = false;
+});
+
+
+
+
 canvas.width = 2000;
 canvas.height = 1000;
 
@@ -507,47 +542,56 @@ redraw(); // Initial render
 
 
 function gameLoop() {
-  redraw();
-  hub();
-  base();
-  checkWin();
+  if (!paused) {
+    redraw();
+    hub();
+    base();
+    checkWin();
+  }
   requestAnimationFrame(gameLoop);
 }
-gameLoop(); // Start the loop
+
+// Start the game loop
+gameLoop();
 
 function tick() {
-  system.health--;
-  if(system.health<0){system.health=0};
-  
+  if (!paused) {
+    system.health--;
+    if (system.health < 0) system.health = 0;
+  }
 }
+
 setInterval(tick,2*1000);
 setInterval(checkSurveillanceDamage,100)
 
 
 function checkWin() {
-  if(system.health>=100)
-    {
-      alert("You WIN!!!");
-    }
-   if(system.health==0)
-    {
-      alert("You Lost !! Aurex health is Zero");
-    }
-    if(player.health==0)
-    {
-      alert("You Lost !! Player health is Zero");
-    }
-    if(!(isSufficientKeys()))
-    {
-     alert("You Lost !! Keys are not Sufficeint in Number");
-    }
+  if (system.health >= 100) {
+    paused = true;
+    alert("You WIN!!!");
+    return;
+  }
+  if (system.health <= 0) {
+    paused = true;
+    alert("You Lost !! Aurex health is Zero");
+    return;
+  }
+  if (player.health <= 0) {
+    paused = true;
+    alert("You Lost !! Player health is Zero");
+    return;
+  }
+  if (!isSufficientKeys()) {
+    paused = true;
+    alert("You Lost !! Keys are not Sufficient in Number");
+    return;
+  }
 }
 function isSufficientKeys() {
-  console.log(system.health + 20*player.collectedDataShards + 10*key.length + 10*player.collectedKey);
-  if(system.health + 20*player.collectedDataShards + 10*key.length + 10*player.collectedKey>= 100){
-    return true;
-  }
-  else{
-    return false;
-  }
+  // This is just an example - adjust the logic to match your game rules
+  const totalPotential = system.health + 
+                        (player.collectedDataShards * 20) + 
+                        (key.length * 10) + 
+                        (player.collectedKey * 10);
+  return totalPotential >= 100;
 }
